@@ -122,9 +122,16 @@ Decoy implements [Cloner](https://github.com/BKWLD/cloner) to allow admins to du
 
 ### Many to Many relationships
 
+Decoy expects you to name your relationships after the model/table. So a post with many images should have an "images" relationship defined.  Then, add the following code to your edit view to add a listing interface to the sidebar of the page.
+
+```php?start_inline=1
+$sidebar->add(Former::listing('App\Image'));
+```
+
+The listing interface will allow you to attach Images to your Post and will look similar to this:
+
 ![](assets/img/many-to-many.gif)
 
-Decoy expects you to name your relationships after the model/table. So a post with many images should have an "images" relationship defined.
 
 Since we typically add timestamps to pivot tables, you'll want to call `withTimestamps` on relationships.  And, if the pivot rows should be sortable, you'l need to use `withPivot('position')` so that the position value gets rendered to the listing table.  Additionally, the easiest way to have Decoy sort by position in the admin is to add that `orderBy` clause to the relationships as well.  So your full relationship function may look like (don't forget that both models in the relationship need to be defined):
 
@@ -161,10 +168,10 @@ I am using this term to describe a model that relates back to it self; like a pr
 
 ```php?start_inline=1
 public function projects() {
-	return $this->belongsToMany('Project', 'project_projects', 'project_id', 'related_project_id');
+	return $this->belongsToMany('App\Project', 'project_projects', 'project_id', 'related_project_id');
 }
 public function projectsAsChild() {
-	return $this->belongsToMany('Project', 'project_projects', 'related_project_id', 'project_id');
+	return $this->belongsToMany('App\Project', 'project_projects', 'related_project_id', 'project_id');
 }
 ```
 
@@ -180,12 +187,12 @@ Example:
 
 ```php?start_inline=1
 public function services() {
-	return $this->morphedByMany('Service', 'serviceable', null, 'serviceable_id', 'service_id')
+	return $this->morphedByMany('App\Service', 'serviceable', null, 'serviceable_id', 'service_id')
     ->withTimestamps();
 }
 public function servicesAsChild() {
-  return $this->morphedByMany('Service', 'serviceable')-
-    >withTimestamps();
+  return $this->morphedByMany('App\Service', 'serviceable')
+    ->withTimestamps();
 }
 ```
 

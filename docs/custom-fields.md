@@ -16,6 +16,34 @@ echo Former::belongsTo('related_product_id', 'Related product')->parent(App\Proj
 echo Former::belongsTo('author_id', 'Author')->route('/admin/admins')->value(app('decoy.user')->id)->title(app('decoy.user')->getAdminTitleAttribute());
 ```
 
+### Boolean
+
+- Creates a single checkbox for use with boolean attributes
+
+```php?start_inline=1
+echo Former::boolean('featured')->message('Yes, featured')
+```
+
+### Checklist
+
+- Wraps Former's `checkbox` field so that it's easier to instantiate using a simple associative array
+
+```php?start_inline=1
+echo Former::checklist('category')->from([
+	'car' => 'Red Car',
+	'bus' => 'Big bus'
+]);
+```
+
+- Note, the checklist field will POST an array to the server.  You can convert this to a string for storing in the database by [casting](https://laravel.com/docs/5.4/eloquent-mutators#array-and-json-casting) to an array:
+
+```php?start_inline=1
+// In your model
+protected $casts = [
+    'category' => 'array',
+];
+```
+
 ### Date
 
 ![](assets/img/date.gif)
@@ -94,6 +122,17 @@ echo Former::manyToManyChecklist('hubs')
 echo Former::note('Creator', $author->name);
 ```
 
+### Radiolist
+
+- Wraps Former's `radio` field so that it's easier to instantiate using a simple associative array
+
+```php?start_inline=1
+echo Former::radiolist('category')->from([
+	'car' => 'Red Car',
+	'bus' => 'Big bus'
+]);
+```
+
 ### Time
 
 - Create a time [selector widget](http://cl.ly/image/22062i19133Y).
@@ -106,6 +145,7 @@ echo Former::time('time')->value('now');
 ### Upload
 
 - Creates a [file upload field](http://cl.ly/image/1a0q0C0p3V3y) with additional UI for reviewing the last upload and deleting it.
+- Decoy uses [Upchuck](https://github.com/BKWLD/upchuck) to facilitate file upload handling.  As a result, file upload fields need to be white listed on the model using the `upload_attributes` property.  See [the usage](https://github.com/BKWLD/upchuck#usage) section of the [Upchuck README](https://github.com/BKWLD/upchuck/blob/master/README.md) for examples.
 
 ```php?start_inline=1
 echo Former::upload('file');
@@ -117,6 +157,7 @@ echo Former::upload('file');
 
 - Creates a [video upload field](http://yo.bkwld.com/image/1R3V1T2o1R1P) with additional UI for checking the progress of the encoding and then playing back the video.
 - Review the feature on Encoding from this doc for more information on the setup of the video encoding feature of Decoy.
+- Decoy uses [Upchuck](https://github.com/BKWLD/upchuck) to facilitate file upload handling.  As a result, file upload fields need to be white listed on the model using the `upload_attributes` property.  See [the usage](https://github.com/BKWLD/upchuck#usage) section of the [Upchuck README](https://github.com/BKWLD/upchuck/blob/master/README.md) for examples.
 
 ```php?start_inline=1
 echo Former::videoEncoder('video');

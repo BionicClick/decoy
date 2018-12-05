@@ -17,9 +17,9 @@ Use a `fieldset` and a div of class `.legend` to contain groups of fields in box
 
 ## Overriding a Decoy partial
 
-You can override any of the Decoy partials on a per-controller basis.  This is done by creating a file structure within a controller's views directory that matches the decoy views structure.  Any mirrored path will be used in place of the Decoy partial.  For instance, if you create a file at app/views/admin/articles/shared/_pagination.php you can customize the pagination partial JUST for the articles controller.
+You can override any of the Decoy partials on a per-controller basis.  This is done by creating a file structure within a controller's views directory that matches the decoy views structure.  Any mirrored path will be used in place of the Decoy partial.  For instance, if you create a file at `/resources/views/admin/articles/shared/pagination/index.php` you can customize the pagination partial JUST for the articles controller.
 
-In addition, you can override a partial for ALL controllers through built in [Laravel functionality](http://laravel.com/docs/packages#package-views).
+In addition, you can override a partial for ALL controllers through built in [Laravel functionality](http://laravel.com/docs/packages#package-views).  For instance, change the sidebar with a file at `/resources/views/vendor/decoy/layouts/sidebar/_sidebar.haml`.
 
 ## Sidebar
 
@@ -57,22 +57,40 @@ static public $categories = array(
 );
 ```
 
-Then, in the edit view, you could do this:
+Then, in the edit view, you could do something like this:
 
 ```php?start_inline=1
-echo Former::checkbox('category')
-  ->checkboxes(Bkwld\Library\Laravel\Former::checkboxArray('category', Post::$categories))
-  ->push(false)
+echo Former::checklist('category')->from(Post::$categories)
+echo Former::radiolist('category')->from(Post::$categories)
 ```
 
-Furthermore, you can use this array for searching the list view by referencing it in the `search` property on your controller:
+Note, the checklist field will POST an array to the server.  You can convert this to a string for storing in the database by [casting](https://laravel.com/docs/5.4/eloquent-mutators#array-and-json-casting) to an array:
+
+```php?start_inline=1
+// In your model
+protected $casts = [
+    'category' => 'array',
+];
+```
+
+... or you can convert to a string by hooking into the saving event, which is easy in Decoy using the `onSaving` no-op method that you inherit by subclassing the Decoy base model.
+
+```php?start_inline=1
+// In your model
+public function onSaving()
+{
+    $this->category = implode(',', $this->category);
+}
+```
+
+Additionally, you can use this array for searching the list view by referencing it in the `search` property on your controller:
 
 ```php?start_inline=1
 protected $search = array(
   'title',
   'category' => array(
     'type' => 'select',
-    'options' => 'Post::$categories'
+    'options' => App\Post::$categories
   ),
 );
 ```
@@ -84,7 +102,7 @@ Finally, there is some automatic logic on the list table that will take the valu
 The `auto-toggleable` JS module applies some JS to forms that will allow you to define fields that hide and show based on clicks on "trigger" elements.  For example:
 
 ```haml
-!= Former::radios('type')->radios(Bkwld\Library\Laravel\Former::radioArray(Article::$types))->dataToggleable('type')
+!= Former::radiolist('type')->from(App\Article::$types)->dataToggleable('type')
 != Former::text('title')
 != Former::wysiwyg('body')->dataShowWhenType('internal')
 != Former::image('image')->dataShowWhenType('internal')
@@ -97,7 +115,7 @@ You can edit a child model in the context of it's parent Through special naming 
 
 ```haml
 != Former::text('title')
-!= Former::text('_author[2][name]')
+!= Former::text('author[2][name]')
 ```
 
 When this form submits, Decoy will update the `title` attribute of the model like normal, but will also look up `$model->author()->find(2)` and set the `name` attribute on it to whatever was in the form.

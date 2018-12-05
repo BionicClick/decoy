@@ -6,6 +6,7 @@ define(function (require) {
 	// Dependencies
 	var $ = require('jquery'),
 		_ = require('underscore'),
+		__ = require('../localize/translated'),
 		Backbone = require('backbone');
 
 	// Bring in just enough jQuery UI for drag and drop
@@ -292,6 +293,13 @@ define(function (require) {
 
 		// Hide a row, a in a delete
 		hideRow: function($row) {
+
+			// If a soft deleting controller, set to the trashed appearance instead
+			if (this.$el.data('with-trashed')) {
+				return this.trashRow($row);
+			}
+
+			// Loop through the columns
 			$row.find('td').each(function() {
 
 				// Animate out the padding of the cells
@@ -303,6 +311,22 @@ define(function (require) {
 					$row.remove();
 				});
 			});
+		},
+
+		// Mark a row as trashed
+		trashRow: function($row) {
+
+			// Add trashed style to row and rmemove the faded out state
+			$row.addClass('is-trashed').animate({ opacity:1 }, 300);
+
+			// Swap can icon for a non-interactive one
+			$row.find('.delete-now')
+			.after('<span class="glyphicon glyphicon-trash">')
+			.tooltip('destroy')
+			.remove();
+
+			// Disable the checkbox
+			$row.find('[name="select-row"]').prop('disabled', true);
 		},
 
 		toggleAll: function () {
@@ -456,7 +480,7 @@ define(function (require) {
 				model = this.collection.get(modelId);
 
 			// Set the visibility status
-			model.set('public', model.get('public') ? false : true);
+			model.set('public', model.get('public') ? 0 : 1);
 			model.save();
 
 			// Update the UI
@@ -564,13 +588,13 @@ define(function (require) {
 				if (model.get('public')) {
 					$icon.addClass(publicIconClass);
 					$icon.removeClass(privateIconClass);
-					$icon.attr('title', 'Make private');
-					$row.find('.visibility.js-tooltip').attr('data-original-title', 'Make private');
+					$icon.attr('title', __('standard_list.private'));
+					$row.find('.visibility.js-tooltip').attr('data-original-title', __('standard_list.private'));
 				} else {
 					$icon.removeClass(publicIconClass);
 					$icon.addClass(privateIconClass);
-					$icon.attr('title', 'Publish');
-					$row.find('.visibility.js-tooltip').attr('data-original-title', 'Publish');
+					$icon.attr('title', __('standard_list.publish'));
+					$row.find('.visibility.js-tooltip').attr('data-original-title', __('standard_list.publish'));
 				}
 			}
 
